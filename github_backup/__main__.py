@@ -19,7 +19,7 @@ def get_config(key, default=None):
             logger.error("Missing config key: {}.".format(key))
             exit(1)
         return default
-
+github_user = get_config("github_username")
 github_token = get_config("github_auth_token")
 repo_dir = get_config("repo_dir")
 blacklist = set(get_config("blacklist", []))
@@ -28,14 +28,16 @@ g = Github(auth=Auth.Token(github_token))
 repos = g.get_user().get_repos()
 
 def handle_repo(r):
-    repo_path = Path(join(repo_dir, r.name + ".git"))
+    repo_name = r.name
+    repo_path = Path(join(repo_dir, repo_name + ".git"))
     if repo_path.exists():
-        logger.info("Updating " + r.name)
+        logger.info("Updating " + repo_name)
         repo = Repo(repo_path)
         repo.remote().fetch("+refs/heads/*:refs/heads/*")
         return repo
-    logger.info("Cloning " + r.git_url)
-    return Repo.clone_from(r.clone_url, repo_path, bare=True)
+    url = f"https://{github_user}:{github_token}@github.com/{github_user}/{repo_name}.git"
+    logger.info("Cloning " + repo_name)
+    return Repo.clone_from(url, repo_path, bare=True)
 
 results = [ handle_repo(repo) for repo in repos if repo.name not in blacklist ]
 logger.info(results)

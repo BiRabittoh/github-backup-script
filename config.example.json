@@ -1,4 +1,5 @@
 {
+    "github_username": "User",
     "github_auth_token": "abcdef123456",
     "repo_dir": "repos",
     "blacklist": [
