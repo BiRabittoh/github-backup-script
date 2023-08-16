@@ -2,8 +2,7 @@ from github import Github, Auth
 from git import Repo
 from git.exc import GitCommandError
 from pathlib import Path
-from os.path import join
-import logging, json
+import logging, json, os
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -24,13 +23,15 @@ github_user = get_config("github_username")
 github_token = get_config("github_auth_token")
 repo_dir = get_config("repo_dir")
 blacklist = set(get_config("blacklist", []))
+suffix = ".git"
+suffix_len = len(suffix)
 
 g = Github(auth=Auth.Token(github_token))
 repos = g.get_user().get_repos()
 
 def handle_repo(r):
     repo_name = r.name
-    repo_path = Path(join(repo_dir, repo_name + ".git"))
+    repo_path = Path(os.path.join(repo_dir, repo_name + suffix))
     
     if repo_path.exists():
         logger.info("Updating " + repo_name)
@@ -42,9 +43,12 @@ def handle_repo(r):
         repo = Repo.clone_from(url, repo_path, bare=True)
     
     repo_desc = "" if r.description is None else r.description
-    with open(join(repo_path, "description"), "w") as out_file:
+    with open(os.path.join(repo_path, "description"), "w") as out_file:
         out_file.write(repo_desc + "\n")
-    return repo
+    return repo_name
 
-results = [ handle_repo(repo) for repo in repos if repo.name not in blacklist ]
-logger.info(results)
+results = set([ handle_repo(repo) for repo in repos if repo.name not in blacklist ])
+subfolders = set([ f.name[:-suffix_len] for f in os.scandir(repo_dir) if f.is_dir() ])
+
+print("Untracked repositories:")
+print(sorted(subfolders.difference(results)))
