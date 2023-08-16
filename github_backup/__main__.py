@@ -19,6 +19,7 @@ def get_config(key, default=None):
             logger.error("Missing config key: {}.".format(key))
             exit(1)
         return default
+
 github_user = get_config("github_username")
 github_token = get_config("github_auth_token")
 repo_dir = get_config("repo_dir")
@@ -31,7 +32,6 @@ def handle_repo(r):
     repo_name = r.name
     repo_path = Path(join(repo_dir, repo_name + ".git"))
     if repo_path.exists():
-        return
         logger.info("Updating " + repo_name)
         repo = Repo(repo_path)
         repo.remote().fetch("+refs/heads/*:refs/heads/*")
