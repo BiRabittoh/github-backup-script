@@ -12,7 +12,7 @@ with open("config.json", "r") as in_file:
     config = json.loads("".join(in_file.readlines()))
     
 def get_config(key, default=None):
-    try:
+    try:    
         return config[key]
     except KeyError:
         if default is None:
@@ -31,14 +31,20 @@ repos = g.get_user().get_repos()
 def handle_repo(r):
     repo_name = r.name
     repo_path = Path(join(repo_dir, repo_name + ".git"))
+    
     if repo_path.exists():
         logger.info("Updating " + repo_name)
         repo = Repo(repo_path)
         repo.remote().fetch("+refs/heads/*:refs/heads/*")
-        return repo
-    url = f"https://{github_user}:{github_token}@github.com/{r.owner.login}/{repo_name}.git"
-    logger.info("Cloning " + repo_name)
-    return Repo.clone_from(url, repo_path, bare=True)
+    else:
+        url = f"https://{github_user}:{github_token}@github.com/{r.owner.login}/{repo_name}.git"
+        logger.info("Cloning " + repo_name)
+        repo = Repo.clone_from(url, repo_path, bare=True)
+    
+    repo_desc = "" if r.description is None else r.description
+    with open(join(repo_path, "description"), "w") as out_file:
+        out_file.write(repo_desc + "\n")
+    return repo
 
 results = [ handle_repo(repo) for repo in repos if repo.name not in blacklist ]
 logger.info(results)
