@@ -1,0 +1,8 @@
+{
+    "github_auth_token": "abcdef123456",
+    "repo_dir": "repos",
+    "blacklist": [
+        "weird-fork-1",
+        "useless-repo"
+    ]
+}
