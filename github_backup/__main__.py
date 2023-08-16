@@ -31,11 +31,12 @@ def handle_repo(r):
     repo_name = r.name
     repo_path = Path(join(repo_dir, repo_name + ".git"))
     if repo_path.exists():
+        return
         logger.info("Updating " + repo_name)
         repo = Repo(repo_path)
         repo.remote().fetch("+refs/heads/*:refs/heads/*")
         return repo
-    url = f"https://{github_user}:{github_token}@github.com/{github_user}/{repo_name}.git"
+    url = f"https://{github_user}:{github_token}@github.com/{r.owner.login}/{repo_name}.git"
     logger.info("Cloning " + repo_name)
     return Repo.clone_from(url, repo_path, bare=True)
 
