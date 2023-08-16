@@ -34,8 +34,8 @@ def handle_repo(r):
         repo = Repo(repo_path)
         repo.remote().fetch("+refs/heads/*:refs/heads/*")
         return repo
-    logger.info("Cloning " + r.name)
-    return Repo.clone_from(REPO_URL, repo_path, bare=True)
+    logger.info("Cloning " + r.git_url)
+    return Repo.clone_from(r.clone_url, repo_path, bare=True)
 
 results = [ handle_repo(repo) for repo in repos if repo.name not in blacklist ]
 logger.info(results)
